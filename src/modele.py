@@ -13,7 +13,7 @@ def separer_donnees(x,y):
 
     # Répartit les observations : 80 % pour apprendre, 20 % pour évaluer.
     # Les informations et leurs réponses restent associées.
-    # Garde les mêmes exemples d'entraînement et de test à chaque exécution
+    # random_state : Garde les mêmes exemples d'entraînement et de test à chaque exécution
     # pour comparer les modèles sans que les résultats changent à cause d'une nouvelle répartition.
     x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.20,random_state=42)
     return x_train,x_test,y_train,y_train
