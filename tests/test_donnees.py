@@ -33,9 +33,7 @@ def test_check_data_sanity_accepte_donnees_valides(donnees_valides):
         ("Solar Radiation (MJ/m2)", -1, "Valeurs des radiations solaires sous 0."),
     ],
 )
-def test_check_data_sanity_rejette_donnees_invalides(
-    donnees_valides, colonne, valeur, message
-):
+def test_check_data_sanity_rejette_donnees_invalides(donnees_valides, colonne, valeur, message):
     donnees_valides.loc[1, colonne] = valeur # modifie la valeur à la colonne donnée
 
     with pytest.raises(ValueError) as erreur:
