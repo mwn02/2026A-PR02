@@ -1,9 +1,9 @@
-from donnees import load_data, box_plot_bike_count
+from donnees import load_data, rented_bikes_per_hour
 from modele import preparer_donnees, separer_donnees, entrainer_dummy
 
 if __name__ == "__main__":
    df = load_data()
-   box_plot_bike_count(df)
+   rented_bikes_per_hour(df)
    # x récupère les informations utilisées pour prédire.
    # y récupère les réponses réelles : le nombre de vélos loués.
    x, y = preparer_donnees(df)

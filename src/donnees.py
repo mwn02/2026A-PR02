@@ -45,4 +45,5 @@ def rented_bikes_per_hour(df: pd.DataFrame) -> None:
     plt.title("Locations moyennes de vélos selon l'heure")
     plt.xticks(range(0, 24)) # 24 heures
     plt.grid(True)
+    plt.savefig("velo_loues_par_heure.png")
     plt.show()
