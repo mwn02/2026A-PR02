@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-
+from exceptions import DonneeInvalideError
 from src.donnees import check_data_sanity
 
 # Une fixture permet de définir les données une seule fois
@@ -36,7 +36,7 @@ def test_check_data_sanity_accepte_donnees_valides(donnees_valides):
 def test_check_data_sanity_rejette_donnees_invalides(donnees_valides, colonne, valeur, message):
     donnees_valides.loc[1, colonne] = valeur # modifie la valeur à la colonne donnée
 
-    with pytest.raises(ValueError) as erreur:
+    with pytest.raises(DonneeInvalideError) as erreur:
         check_data_sanity(donnees_valides)
 
     assert str(erreur.value) == message # vérifie que le message d'erreur est celui attendu
