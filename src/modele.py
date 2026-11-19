@@ -18,7 +18,7 @@ def separer_donnees(x,y):
     x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.20,random_state=42)
     return x_train,x_test,y_train,y_train
 
-def entrainer_données(x_train, y_train):
+def entrainer_dummy(x_train, y_train):
     # Crée un modèle configuré pour prédire toujours la moyenne, sans encore la calculer.
     reference = DummyRegressor(strategy="mean")
     # fit calcule et mémorise la moyenne de y_train ; x_train important, mais il ne s'en sert pas.
