@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
-from src.exceptions import DonneeInvalideError
-from src.donnees import Dataset
+from exceptions import DonneeInvalideError
+from donnees import Dataset
 
 # Une fixture permet de définir les données une seule fois
 # et de les réutiliser dans plusieurs tests.
