@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
-from exceptions import DonneeInvalideError
-from src.donnees import check_data_sanity
+from src.exceptions import DonneeInvalideError
+from src.donnees import Dataset
 
 # Une fixture permet de définir les données une seule fois
 # et de les réutiliser dans plusieurs tests.
@@ -17,7 +17,7 @@ def donnees_valides():
 
 
 def test_check_data_sanity_accepte_donnees_valides(donnees_valides):
-    assert check_data_sanity(donnees_valides) is None
+    assert Dataset.check_data_sanity(donnees_valides) is None
 
 # permet l'exécution d'un test plusieurs fois avec des valeurs différentes
 @pytest.mark.parametrize(
@@ -37,6 +37,25 @@ def test_check_data_sanity_rejette_donnees_invalides(donnees_valides, colonne, v
     donnees_valides.loc[1, colonne] = valeur # modifie la valeur à la colonne donnée
 
     with pytest.raises(DonneeInvalideError) as erreur:
-        check_data_sanity(donnees_valides)
+        Dataset.check_data_sanity(donnees_valides)
 
     assert str(erreur.value) == message # vérifie que le message d'erreur est celui attendu
+
+
+def test_dataset_rejette_un_dossier(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        Dataset(tmp_path)
+
+def test_dataset_rejette_un_fichier_non_csv(tmp_path):
+    fichier = tmp_path / "donnees.txt"
+    fichier.touch() # crée le fichier temporaire vide
+
+    with pytest.raises(ValueError, match="Le fichier de données doit être un fichier CSV."):
+        Dataset(fichier)
+
+def test_dataset_accepte_extension_csv_majuscule(tmp_path, donnees_valides):
+    fichier = tmp_path / "donnees.CSV"
+    donnees_valides.to_csv(fichier, index=False, encoding="cp1252")
+
+    dataset = Dataset(fichier)
+    pd.testing.assert_frame_equal(dataset.dataframe, donnees_valides)
