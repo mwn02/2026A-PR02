@@ -1,5 +1,5 @@
 from donnees import load_data, box_plot_bike_count
-from modele import preparer_donnees, separer_donnees, entrainer_dummy
+from modele import preparer_donnees, separer_donnees, entrainer_dummy, entrainer_sgd
 
 if __name__ == "__main__":
    df = load_data()
