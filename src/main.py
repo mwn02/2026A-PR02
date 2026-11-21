@@ -1,14 +1,13 @@
 from donnees import load_data, box_plot_bike_count
-from modele import preparer_donnees, separer_donnees, entrainer_dummy, entrainer_sgd
+from modele import preparer_donnees, separer_donnees, entrainer_dummy
 
 if __name__ == "__main__":
-   # Charge les données avec donnees.py et les conserve dans df pour les réutiliser dans le reste du code
    df = load_data()
-   # Affiche un box plot des nombres de vélos loués dans df pour repérer les valeurs inhabituelles.
    box_plot_bike_count(df)
-   # Récupère les conditions/paramètres de df dans x et les nombres réels de vélos dans y.
+   # x récupère les informations utilisées pour prédire.
+   # y récupère les réponses réelles : le nombre de vélos loués.
    x, y = preparer_donnees(df)
-   # Réserve 80 % des lignes et leurs réponses à l'entraînement, et 20 % à l'évaluation.
+   # Récupère les données séparées : 80 % pour l'entraînement et 20 % pour le test.
    x_train, x_test, y_train, y_test = separer_donnees(x, y)
    # Récupère le dummy qui prédit la moyenne de y_train pour comparer ensuite son erreur à celle de SGD.
    modele_dummy = entrainer_dummy(x_train, y_train)
