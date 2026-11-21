@@ -12,6 +12,8 @@ if __name__ == "__main__":
 
    modele_dummy.entrainer()
    modele_sgd.entrainer()
+   modele_dummy.save()
+   modele_sgd.save()
 
    prediction_dummy = modele_dummy.predict(modele_dummy.x_test)
    prediction_sgd = modele_sgd.predict(modele_sgd.x_test)

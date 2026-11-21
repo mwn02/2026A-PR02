@@ -37,7 +37,17 @@ def test_dummy_predit_moyenne(donnees):
 
     np.testing.assert_allclose(predictions, modele.y_train.mean()) # test s'il retourne la moyenne
 
+def test_colonne_manquante(donnees):
+    with pytest.raises(KeyError):
+        DummyModel(donnees[["Hour", "Humidity(%)", "Wind speed (m/s)"]])
+
 def test_not_fitted_model_error(donnees):
     modele = DummyModel(donnees)
     with pytest.raises(NotFittedError):
         modele.predict(donnees)
+
+def test_sauvegarde_refuse_modele_non_entraine(donnees, tmp_path):
+    modele = DummyModel(donnees)
+
+    with pytest.raises(NotFittedError):
+        modele.save()
