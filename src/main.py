@@ -1,19 +1,35 @@
-from donnees import load_data, box_plot_bike_count
-from modele import preparer_donnees, separer_donnees, entrainer_dummy, entrainer_sgd
+import os
+import matplotlib.pyplot as plt
+from donnees import Dataset
+from modele import DummyModel, SGDModel
 
 if __name__ == "__main__":
-   df = load_data()
-   box_plot_bike_count(df)
-   # x récupère les informations utilisées pour prédire.
-   # y récupère les réponses réelles : le nombre de vélos loués.
-   x, y = preparer_donnees(df)
-   # Récupère les données séparées : 80 % pour l'entraînement et 20 % pour le test.
-   x_train, x_test, y_train, y_test = separer_donnees(x, y)
-   # Récupère le dummy qui prédit la moyenne de y_train pour comparer ensuite son erreur à celle de SGD.
-   modele_dummy = entrainer_dummy(x_train, y_train)
-   # Prédit cette moyenne pour chaque ligne réservée au test dans x_test.
-   prediction_dummy = modele_dummy.predict(x_test)
-   # Entraîne SGD sur les mêmes données et récupère le modèle avec sa standardisation, qui met les colonnes de x_train sur une même échelle.
-   modele_sgd = entrainer_sgd(x_train, y_train)
-   # Réutilise la standardisation apprise pour préparer x_test, puis prédit les vélos loués de chaque ligne.
-   prediction_sgd = modele_sgd.predict(x_test)
+   path = os.path.join("donnees", "SeoulBikeData.csv")
+   dataset = Dataset(path)
+   dataset.plot_rented_bikes_per_hour()
+   modele_dummy = DummyModel(dataset.dataframe)
+   modele_sgd = SGDModel(dataset.dataframe)
+
+   modele_dummy.entrainer()
+   modele_sgd.entrainer()
+
+   prediction_dummy = modele_dummy.predict(modele_dummy.x_test)
+   prediction_sgd = modele_sgd.predict(modele_sgd.x_test)
+   
+   y_test = modele_sgd.y_test
+
+   # Compare les prédictions des deux modèles aux valeurs réelles du même jeu de test.
+   plt.figure(figsize=(9, 6))
+   plt.scatter(y_test, prediction_sgd, alpha=0.35, label="Modèle SGD")
+   plt.scatter(y_test, prediction_dummy, alpha=0.35, label="Modèle dummy")
+   minimum = min(prediction_sgd.min(), prediction_dummy.min())
+   maximum = max(prediction_sgd.max(), prediction_dummy.max())
+   plt.plot([minimum, maximum], [minimum, maximum], "k--", label="Prédiction parfaite") # k-- pour une ligne de traits noirs
+   plt.xlabel("Nombre réel de vélos loués")
+   plt.ylabel("Nombre prédit de vélos loués")
+   plt.title("Prédictions du modèle SGD et du modèle dummy")
+   plt.legend()
+   plt.grid(True, alpha=0.3)
+   plt.tight_layout()
+   plt.savefig("predictions_modeles.png")
+   plt.show()
