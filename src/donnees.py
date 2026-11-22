@@ -75,7 +75,7 @@ class Variable(ABC):
 
     @abstractmethod
     def valider(self, texte: str):
-        """Valide une valeur saisie par l'utilisateur."""
+        """Garde le nom d'une variable et définit la méthode de validation que les deux types de variables devront utiliser avant une prédiction."""
         raise NotImplementedError
 
     def __str__(self) -> str:
@@ -91,7 +91,7 @@ class VariableNumerique(Variable):
         self.entier = entier
 
     def valider(self, texte: str):
-        """Convertit une saisie en nombre et vérifie sa validité."""
+        """Vérifie que le nombre entré par l'utilisateur respecte les limites de la variable avant de l'envoyer au modèle."""
 
         # Refuse un champ vide.
         if not texte.strip():
@@ -123,13 +123,16 @@ class VariableNumerique(Variable):
 
 
 class VariableCategorielle(Variable):
-    # Exemple : Summer, Winter, Holiday ou No Holiday.
+    # Vérifie les choix catégoriels (ex. Summer, Winter, Holiday ou No Holiday).
+    # Ces choix seront utilisés pour valider ce que l'utilisateur sélectionne dans l'interface.
     def __init__(self, nom: str, valeurs: list[str]) -> None:
         super().__init__(nom)
         self.valeurs = valeurs
 
     def valider(self, texte: str) -> str:
         """Accepte uniquement les catégories connues."""
+        # texte : choix sélectionné par l'utilisateur (ex. "Summer" ou "No Holiday").
+        # self.valeurs : liste des choix autorisés récupérés dans les métadonnées.
         if texte not in self.valeurs:
             raise DonneeInvalideError(f"{self.nom} : choix invalide.")
         return texte
