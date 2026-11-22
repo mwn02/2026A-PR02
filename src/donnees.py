@@ -42,7 +42,7 @@ class Dataset:
             raise DonneeInvalideError("Valeurs de l'humidité hors de 0-100%.")
 
         if (df["Rented Bike Count"] < 0).any():
-            raise DonneeInvalideError("Valeurs du nombre de vélos loués sous 0.")
+            raise DonneeInvalideError("Valeurs du nombre de vélo loués sous 0.")
 
         if (df["Wind speed (m/s)"] < 0).any():
             raise DonneeInvalideError("Valeurs de la vitesse du vent sous 0.")
