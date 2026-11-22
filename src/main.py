@@ -4,7 +4,7 @@ from donnees import Dataset, enregistrer_metadonnees
 from modele import DummyModel, SGDModel
 from sklearn.metrics import r2_score
 import numpy as np
-
+from interface import creer_interface
 
 if __name__ == "__main__":
    path = os.path.join("donnees", "SeoulBikeData.csv")
@@ -57,3 +57,5 @@ if __name__ == "__main__":
    plt.tight_layout()
    plt.savefig("predictions_modeles.png")
    plt.show()
+
+   creer_interface().mainloop()
