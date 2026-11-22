@@ -1,6 +1,7 @@
 ﻿from abc import ABC, abstractmethod
 
 from pathlib import Path
+from time import perf_counter
 
 import joblib
 import numpy as np
@@ -14,6 +15,17 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
+
+
+def timer(func):
+    """Mesure le temps d'entrainement et retourne le modele."""
+    def wrapper(self):
+        debut = perf_counter()
+        resultat = func(self)
+        print(f"Entraînement de {type(self).__name__} - temps écoulé: {perf_counter() - debut:.4f} secondes.")
+        return resultat
+
+    return wrapper
 
 
 class Model(ABC):
@@ -95,6 +107,7 @@ class Model(ABC):
 class DummyModel(Model):
     """Modèle qui prédit la moyenne de la cible du jeu d'entraînement."""
 
+    @timer
     def entrainer(self) -> Pipeline:
         """Retourne et conserve le modèle entraîné qui prédit la moyenne de y_train."""
         modele = make_pipeline(self.creer_pretraitement(), DummyRegressor(strategy="mean"))
@@ -106,6 +119,7 @@ class DummyModel(Model):
 class SGDModel(Model):
     """Régression linéaire entraînée par descente de gradient stochastique."""
 
+    @timer
     def entrainer(self) -> Pipeline:
         """Retourne et conserve le modèle SGD entraîné,"""
         modele = make_pipeline(self.creer_pretraitement(), SGDRegressor(random_state=42))
