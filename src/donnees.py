@@ -214,35 +214,51 @@ def enregistrer_metadonnees(df: pd.DataFrame, colonnes: list[str], r2: float) ->
 
 
 class Historique:
+    
     def __init__(self, chemin: str) -> None:
-        # Emplacement du fichier CSV qui conserve les prédictions.
+        # Garde le chemin du fichier CSV pour savoir où enregistrer les nouvelles prédictions et où retrouver les anciennes.
         self._chemin = chemin
 
     def ajouter(self, valeurs: dict, prediction: int) -> None:
         """Ajoute une prédiction à la fin du fichier CSV."""
+        # Récupère le dossier dans lequel se trouve le fichier CSV.
         dossier = os.path.dirname(self._chemin)
+        # Crée le dossier s'il n'existe pas déjà.
         if dossier:
             os.makedirs(dossier, exist_ok=True)
 
         # Les en-têtes sont ajoutés uniquement si le fichier est nouveau.
         nouveau_fichier = not os.path.isfile(self._chemin)
 
-        # Prépare la date, les valeurs saisies et la prédiction.
-        ligne = {"date_heure": datetime.now().isoformat(timespec="seconds")}
+        # Récupère la date et l'heure actuelles pour identifier la prédiction.
+        maintenant = datetime.now()
+        # Convertit cette date en texte avec une précision à la seconde.
+        date_heure = maintenant.isoformat(timespec="seconds")
+        # Commence une nouvelle ligne avec la date et l'heure.
+        ligne = {"date_heure": date_heure}
+
+        # Ajoute les valeurs saisies par l'utilisateur (Hour, Seasons, etc.).
         ligne.update(valeurs)
+
+        # Ajoute le nombre de vélos prédit dans la même ligne.
         ligne["prediction"] = prediction
 
         # Le mode "a" ajoute une ligne sans effacer les anciennes.
         with open(self._chemin, "a", newline="", encoding="utf-8") as fichier:
+            # Prépare l'écriture du dictionnaire sous forme de ligne CSV.
             writer = csv.DictWriter(fichier, fieldnames=ligne.keys())
             if nouveau_fichier:
                 writer.writeheader()
             writer.writerow(ligne)
 
+    
     def lire(self) -> list[dict]:
-        """Retourne les anciennes prédictions sous forme de dictionnaires."""
+        """Récupère les prédictions déjà enregistrées dans le CSV
+        pour pouvoir les afficher dans l'interface."""
+        # Si le fichier CSV n'existe pas encore, il n'y a rien à afficher.
         if not os.path.isfile(self._chemin):
             return []
-
+        # Ouvre le CSV pour récupérer toutes les prédictions enregistrées.
         with open(self._chemin, "r", newline="", encoding="utf-8") as fichier:
+            # Lit les lignes sous forme de dictionnaires, puis les met dans une liste.
             return list(csv.DictReader(fichier))
