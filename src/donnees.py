@@ -137,29 +137,38 @@ class VariableCategorielle(Variable):
 def enregistrer_metadonnees(df: pd.DataFrame, colonnes: list[str], r2: float) -> None:
     """Enregistre les variables et l'histogramme dans un fichier JSON."""
     variables = []
-
-    # Décrit chacune des variables choisies pour entraîner le modèle.
+    
+    # Prépare les informations de chaque variable utilisée par le modèle.
     for nom in colonnes:
         serie = df[nom]
 
-        if pd.api.types.is_numeric_dtype(serie):
-            # Pour un nombre : minimum, maximum et type entier ou décimal.
-            information = {
-                "nom": nom,
-                "type": "numerique",
-                "minimum": float(serie.min()),
-                "maximum": float(serie.max()),
-                "entier": bool(pd.api.types.is_integer_dtype(serie))
-            }
-        else:
-            # Pour une catégorie : liste des choix possibles.
+        if nom == "Seasons" or nom == "Holiday":
+            # Récupère les catégories sans les répéter.
+            choix = []
+            for valeur in serie:
+                if valeur not in choix:
+                    choix.append(valeur)
+
+            choix.sort()
+
             information = {
                 "nom": nom,
                 "type": "categorielle",
-                "valeurs": sorted(serie.dropna().unique().tolist())
+                "valeurs": choix
+            }
+
+        else:
+            # Récupère les limites des variables numériques.
+            information = {
+                "nom": nom,
+                "type": "numerique",
+                "minimum": float(min(serie)),
+                "maximum": float(max(serie)),
+                "entier": nom == "Hour" or nom == "Humidity(%)"
             }
 
         variables.append(information)
+
 
     # Compte le nombre d'heures dans chaque intervalle de locations.
     effectifs, bornes = np.histogram(df["Rented Bike Count"], bins=30)
