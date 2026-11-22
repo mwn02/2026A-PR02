@@ -15,9 +15,6 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
-import json
-from donnees import Historique, VariableNumerique, VariableCategorielle
-from exceptions import DonneeInvalideError
 
 def timer(func):
     """Mesure le temps d'entrainement et retourne le modele."""

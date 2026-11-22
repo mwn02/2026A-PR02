@@ -270,7 +270,6 @@ def creer_interface():
         color="crimson",
         linewidth=2,
         label="Votre prédiction",
-        visible=False
     )
 
     # Ajoute les titres et la légende du graphique.
@@ -278,6 +277,7 @@ def creer_interface():
     axes.set_xlabel("Nombre de vélos loués")
     axes.set_ylabel("Nombre d'heures observées")
     axes.legend()
+    ligne_prediction.set_visible(False)
 
     figure.tight_layout()
 
@@ -371,6 +371,7 @@ def creer_interface():
 
         # Rend la ligne rouge visible.
         ligne_prediction.set_visible(True)
+        axes.legend()
 
         # Ajuste le graphique si la valeur prédite dépasse les limites.
         axes.set_xlim(
