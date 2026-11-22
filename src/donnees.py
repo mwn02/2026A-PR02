@@ -170,25 +170,43 @@ def enregistrer_metadonnees(df: pd.DataFrame, colonnes: list[str], r2: float) ->
         variables.append(information)
 
 
-    # Compte le nombre d'heures dans chaque intervalle de locations.
-    effectifs, bornes = np.histogram(df["Rented Bike Count"], bins=30)
+    
+    # Répartit les nombres de vélos loués en 30 intervalles (ça aurait pu être un autre nombre).
+    # effectifs : nombre d'heures observées dans chaque intervalle.
+    # bornes : limites de chaque intervalle en nombre de vélos loués.
+    effectifs_numpy, bornes_numpy = np.histogram(df["Rented Bike Count"], bins=30)
 
+    # Convertit les tableaux NumPy en listes Python pour le fichier JSON.
+    effectifs = effectifs_numpy.tolist()
+    bornes = bornes_numpy.tolist()
+
+    # Regroupe toutes les informations à enregistrer.
     informations = {
         "variables": variables,
         "r2_test": float(r2),
         "histogramme": {
-            "effectifs": effectifs.tolist(),
-            "bornes": bornes.tolist()
+            "effectifs": effectifs,
+            "bornes": bornes
         }
     }
 
-    # Enregistre le JSON dans le dossier modeles du projet.
-    racine = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    dossier = os.path.join(racine, "modeles")
-    os.makedirs(dossier, exist_ok=True)
-
-    with open(os.path.join(dossier, "metadonnees.json"), "w", encoding="utf-8") as fichier:
+    
+    # Récupère le chemin complet du fichier donnees.py.
+    chemin_fichier = os.path.abspath(__file__)
+    # Récupère le dossier qui contient donnees.py, donc src.
+    dossier_src = os.path.dirname(chemin_fichier)
+    # Remonte encore d'un dossier pour retrouver le dossier principal du projet.
+    dossier_projet = os.path.dirname(dossier_src)
+    # Ajoute "modeles" au chemin du projet pour choisir où enregistrer le JSON.
+    dossier_modeles = os.path.join(dossier_projet, "modeles")
+    # Crée le dossier modeles s'il n'existe pas déjà.
+    os.makedirs(dossier_modeles, exist_ok=True)
+    # Ajoute le nom du fichier JSON au chemin du dossier modeles.
+    chemin_json = os.path.join(dossier_modeles, "metadonnees.json")
+    with open(chemin_json, "w", encoding="utf-8") as fichier:
         json.dump(informations, fichier, ensure_ascii=False, indent=2)
+
+
 
 class Historique:
     def __init__(self, chemin: str) -> None:
