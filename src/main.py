@@ -5,6 +5,7 @@ from modele import DummyModel, SGDModel
 from sklearn.metrics import r2_score
 import numpy as np
 
+
 if __name__ == "__main__":
    path = os.path.join("donnees", "SeoulBikeData.csv")
    dataset = Dataset(path)

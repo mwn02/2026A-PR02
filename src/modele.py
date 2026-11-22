@@ -15,7 +15,9 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
-
+import json
+from donnees import Historique, VariableNumerique, VariableCategorielle
+from exceptions import DonneeInvalideError
 
 def timer(func):
     """Mesure le temps d'entrainement et retourne le modele."""
@@ -126,3 +128,101 @@ class SGDModel(Model):
         modele.fit(self.x_train, self.y_train)
         self.modele = modele
         return self.modele
+
+
+class ApplicationVelos:
+
+    def __init__(self) -> None:
+        """Charge le modèle, les métadonnées et prépare l'historique."""
+
+        # Retrouve le dossier principal du projet.
+        racine = Path(__file__).resolve().parent.parent
+
+        # Indique où se trouvent le modèle et ses informations.
+        chemin_modele = racine / "modeles" / "SGDModel.joblib"
+        chemin_infos = racine / "modeles" / "metadonnees.json"
+
+        # Vérifie que les deux fichiers existent avant de les charger.
+        if not chemin_modele.is_file() or not chemin_infos.is_file():
+            raise FileNotFoundError(
+                "Modèle ou métadonnées introuvables. Lance d'abord main.py."
+            )
+
+        # Recharge le modèle sauvegardé par ton coéquipier.
+        # Aucun nouvel entraînement n'est nécessaire.
+        self._modele = joblib.load(chemin_modele)
+
+        # Charge les informations des 7 variables depuis le JSON.
+        with open(chemin_infos, "r", encoding="utf-8") as fichier:
+            self._infos = json.load(fichier)
+
+        # Prépare le fichier CSV qui conservera les prédictions.
+        chemin_historique = racine / "historique" / "predictions.csv"
+        self._historique = Historique(str(chemin_historique))
+
+        # Liste qui contiendra les variables utilisées par l'interface.
+        self.variables = []
+
+        # Crée chaque variable selon son type.
+        for info in self._infos["variables"]:
+
+            if info["type"] == "numerique":
+                # Exemple : heure, température, humidité.
+                variable = VariableNumerique(
+                    info["nom"],
+                    info["minimum"],
+                    info["maximum"],
+                    info["entier"]
+                )
+
+            else:
+                # Exemple : saison et jour férié.
+                variable = VariableCategorielle(
+                    info["nom"],
+                    info["valeurs"]
+                )
+
+            self.variables.append(variable)
+
+    def predire(self, saisies: dict[str, str]) -> int:
+        """Valide les saisies, calcule et enregistre une prédiction."""
+
+        valeurs = {}
+
+        # Vérifie chaque valeur entrée par l'utilisateur.
+        for variable in self.variables:
+            texte = saisies.get(variable.nom, "")
+            valeurs[variable.nom] = variable.valider(texte)
+
+        # Transforme les valeurs en DataFrame.
+        # Le modèle scikit-learn attend ce format.
+        tableau = pd.DataFrame([valeurs])
+
+        # Utilise le modèle entraîné pour prédire le nombre de vélos.
+        prediction = float(self._modele.predict(tableau)[0])
+
+        # Vérifie que le résultat est un nombre valide.
+        if not np.isfinite(prediction):
+            raise DonneeInvalideError(
+                "Le modèle a retourné un nombre invalide."
+            )
+
+        # Le nombre de vélos ne peut pas être négatif.
+        # On ramène les prédictions négatives à 0 et on arrondit.
+        resultat = round(max(0, prediction))
+
+        # Enregistre les valeurs et le résultat dans l'historique.
+        self._historique.ajouter(valeurs, resultat)
+
+        # Retourne le nombre de vélos pour l'afficher dans l'interface.
+        return resultat
+
+    def lire_historique(self) -> list[dict]:
+        """Récupère toutes les anciennes prédictions."""
+
+        return self._historique.lire()
+
+    def donnees_histogramme(self) -> dict:
+        """Retourne les données nécessaires au graphique."""
+
+        return self._infos["histogramme"]
