@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
@@ -5,6 +6,8 @@ from datetime import datetime
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pathlib import Path
+import numpy as np
+import pandas as pd
 import joblib
 import json
 from donnees import Historique, VariableNumerique, VariableCategorielle
@@ -27,35 +30,41 @@ class ApplicationVelos:
     def __init__(self) -> None:
         """Charge le modèle, les métadonnées et prépare l'historique."""
 
-        # Retrouve le dossier principal du projet.
-        racine = Path(__file__).resolve().parent.parent
+        # Récupère le chemin complet du fichier interface.py.
+        chemin_interface = os.path.abspath(__file__)
+        # Retrouve le dossier src qui contient interface.py.
+        dossier_src = os.path.dirname(chemin_interface)
+        # Remonte au dossier principal pour retrouver les fichiers du modèle.
+        racine = os.path.dirname(dossier_src)
 
-        # Indique où se trouvent le modèle et ses informations.
-        chemin_modele = racine / "modeles" / "SGDModel.joblib"
-        chemin_infos = racine / "modeles" / "metadonnees.json"
+        # Prépare les chemins des deux fichiers nécessaires à l'interface : le modèle entraîné pour prédire et le JSON pour connaître les variables.
+        chemin_modele = os.path.join(racine, "modeles", "SGDModel.joblib")
+        chemin_infos = os.path.join(racine, "modeles", "metadonnees.json")
 
-        # Vérifie que les deux fichiers existent avant de les charger.
-        if not chemin_modele.is_file() or not chemin_infos.is_file():
+        # Vérifie que les deux fichiers existent avant d'essayer de les charger.
+        if not os.path.isfile(chemin_modele) or not os.path.isfile(chemin_infos):
             raise FileNotFoundError(
                 "Modèle ou métadonnées introuvables. Lance d'abord main.py."
             )
 
-        # Recharge le modèle sauvegardé par ton coéquipier.
-        # Aucun nouvel entraînement n'est nécessaire.
+        # Charge le modèle déjà entraîné pour effectuer des prédictions sans devoir refaire l'entraînement à chaque ouverture de l'interface.
         self._modele = joblib.load(chemin_modele)
 
         # Charge les informations des 7 variables depuis le JSON.
         with open(chemin_infos, "r", encoding="utf-8") as fichier:
             self._infos = json.load(fichier)
-
-        # Prépare le fichier CSV qui conservera les prédictions.
-        chemin_historique = racine / "historique" / "predictions.csv"
-        self._historique = Historique(str(chemin_historique))
-
-        # Liste qui contiendra les variables utilisées par l'interface.
+        
+        # Prépare le chemin du CSV où seront sauvegardées les prédictions.
+        chemin_historique = os.path.join(racine, "historique", "predictions.csv")
+        # Crée un objet Historique qui garde ce chemin.
+        # On pourra ensuite l'utiliser pour ajouter ou lire des prédictions.
+        self._historique = Historique(chemin_historique)
+        # Prépare une liste pour conserver les objets créés à partir du JSON.
+        # Ces objets permettront de construire les champs et de valider les saisies.
         self.variables = []
 
-        # Crée chaque variable selon son type.
+        # Parcourt les informations enregistrées dans le JSON.
+        # Pour chaque variable, crée un objet numérique ou catégoriel qui servira à construire les champs et à valider les saisies.
         for info in self._infos["variables"]:
 
             if info["type"] == "numerique":
@@ -74,6 +83,7 @@ class ApplicationVelos:
                     info["valeurs"]
                 )
 
+            # Ajoute l'objet créé à la liste pour le réutiliser lors des prédictions.
             self.variables.append(variable)
 
     def predire(self, saisies: dict[str, str]) -> int:
@@ -81,7 +91,8 @@ class ApplicationVelos:
 
         valeurs = {}
 
-        # Vérifie chaque valeur entrée par l'utilisateur.
+        # Parcourt les objets mis dans la liste self.variables.
+        # Chaque valeur est convertie selon son type avant d'être ajoutée au dictionnaire qui sera envoyé au modèle.
         for variable in self.variables:
             texte = saisies.get(variable.nom, "")
             valeurs[variable.nom] = variable.valider(texte)
@@ -93,7 +104,7 @@ class ApplicationVelos:
         # Utilise le modèle entraîné pour prédire le nombre de vélos.
         prediction = float(self._modele.predict(tableau)[0])
 
-        # Vérifie que le résultat est un nombre valide.
+        # Vérifie que le modèle a retourné un nombre fini. Une prédiction NaN ou infinie ne peut pas représenter un nombre de vélos.
         if not np.isfinite(prediction):
             raise DonneeInvalideError(
                 "Le modèle a retourné un nombre invalide."
