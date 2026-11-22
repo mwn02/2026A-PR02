@@ -2,6 +2,8 @@ import os
 import matplotlib.pyplot as plt
 from donnees import Dataset
 from modele import DummyModel, SGDModel
+from sklearn.metrics import r2_score
+import numpy as np
 
 if __name__ == "__main__":
    path = os.path.join("donnees", "SeoulBikeData.csv")
@@ -19,6 +21,11 @@ if __name__ == "__main__":
    prediction_sgd = modele_sgd.predict(modele_sgd.x_test)
    
    y_test = modele_sgd.y_test
+
+   print("R² du modèle dummy :", round(r2_score(y_test, prediction_dummy), 4))
+   print("R² du modèle SGD :", round(r2_score(y_test, prediction_sgd), 4))
+   r2_numpy = 1 - np.pow(np.array(y_test) - np.array(prediction_sgd), 2) / np.pow(np.array(y_test) - np.mean(y_test), 2)
+   print("R² du modèle SGD (numpy):", round(r2_score(y_test, prediction_sgd), 4))
 
    # Compare les prédictions des deux modèles aux valeurs réelles du même jeu de test.
    plt.figure(figsize=(9, 6))
