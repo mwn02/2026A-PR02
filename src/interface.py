@@ -4,8 +4,9 @@ from datetime import datetime
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-from modele import ApplicationVelos
+from pathlib import Path
+import joblib
+import json
 from donnees import Historique, VariableNumerique, VariableCategorielle
 from exceptions import DonneeInvalideError
 
