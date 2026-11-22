@@ -26,6 +26,7 @@ class Dataset:
         Elle renvoie un FileNotFoundError si le fichier de données n'existe pas."""
         return pd.read_csv(self._path, encoding="cp1252")
 
+    @staticmethod
     def check_data_sanity(df: pd.DataFrame) -> None:
         """Vérifie qu'il n'y a aucune donnée dans `df` manquante, ni de données ayant une valeur incorrect.
         Retourne une DonneeInvalideError si au moins une donnée est invalide"""
