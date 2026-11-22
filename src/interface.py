@@ -133,8 +133,7 @@ class ApplicationVelos:
 
 def creer_interface():
 
-    # Charge le modèle SGD entraîné et ses métadonnées JSON.
-    # Aucun nouvel entraînement n'est nécessaire.
+    # Prépare l'application avec le modèle entraîné, les variables et l'historique.
     application = ApplicationVelos()
 
     # Création de la fenêtre principale.
@@ -143,7 +142,7 @@ def creer_interface():
     fenetre.geometry("1000x600")
     fenetre.minsize(750, 450)
 
-    # La colonne centrale occupe l'espace disponible.
+    # La colonne centrale occupe l'espace disponible même lorsque la fenêtre change de taille.
     fenetre.columnconfigure(1, weight=1)
     fenetre.rowconfigure(0, weight=1)
 
