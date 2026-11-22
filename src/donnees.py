@@ -141,7 +141,8 @@ def enregistrer_metadonnees(df: pd.DataFrame, colonnes: list[str], r2: float) ->
     # Prépare les informations de chaque variable utilisée par le modèle.
     for nom in colonnes:
         serie = df[nom]
-
+        # Si c'est une des deux variables catégorielles, on récupère ses choix
+        # pour pouvoir les afficher plus tard dans l'interface.
         if nom == "Seasons" or nom == "Holiday":
             # Récupère les catégories sans les répéter.
             choix = []
@@ -158,7 +159,8 @@ def enregistrer_metadonnees(df: pd.DataFrame, colonnes: list[str], r2: float) ->
             }
 
         else:
-            # Récupère les limites des variables numériques.
+            # Toutes les autres variables sont numériques.
+            # On conserve leurs limites pour vérifier les saisies dans l'interface.
             information = {
                 "nom": nom,
                 "type": "numerique",
