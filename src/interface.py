@@ -5,7 +5,6 @@ from datetime import datetime
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import joblib
@@ -335,17 +334,19 @@ def creer_interface():
         expand=True
     )
 
-    # Recharge les prédictions enregistrées dans le fichier CSV.
+    
+    # Récupère les prédictions enregistrées dans le CSV.
     for ligne in application.lire_historique():
 
-        liste_historique.insert(
-            0,
-            f"{ligne['date_heure'][5:16]} : "
-            f"{ligne['prediction']} vélos"
-        )
+        # Récupère la date et retire les informations inutiles pour l'affichage.
+        date_complete = ligne["date_heure"]
+        date = date_complete[5:10] + " " + date_complete[11:16]
 
-    # ----- Fonction exécutée lorsque l'utilisateur clique sur Prédire -----
+        # Affiche chaque prédiction dans la liste historique.
+        liste_historique.insert(0, f"{date} : {ligne['prediction']} vélos")
 
+
+    # --Fonction exécutée lorsque l'utilisateur clique sur Prédire--
     def au_clic_predire() -> None:
         """Récupère les saisies, prédit et actualise l'interface."""
 
@@ -356,9 +357,7 @@ def creer_interface():
             saisies[nom] = champ.get()
 
         try:
-            # Envoie les valeurs au modèle SGD.
-            # La méthode valide les saisies, fait la prédiction
-            # et enregistre le résultat dans l'historique CSV.
+            # Utilise l'objet application pour valider les saisies, prédire le nombre de vélos et enregistrer le résultat dans le CSV.
             nombre = application.predire(saisies)
 
         except DonneeInvalideError as erreur:
@@ -371,27 +370,22 @@ def creer_interface():
             messagebox.showerror("Erreur d'enregistrement", str(erreur))
             return
 
-        # Affiche le résultat prédit dans la fenêtre.
-        resultat.config(
-            text=f"Estimation : {nombre} vélos loués"
-        )
+        # Actualise le texte affiché dans la fenêtre avec le résultat de la prédiction.
+        resultat.config(text=f"Estimation : {nombre} vélos loués")
 
-        # Déplace la ligne rouge sur le nombre prédit.
+        # Place la ligne rouge sur la valeur prédite et la rend visible.
         ligne_prediction.set_xdata([nombre, nombre])
-
-        # Rend la ligne rouge visible.
         ligne_prediction.set_visible(True)
 
-        # Ajuste le graphique si la valeur prédite dépasse les limites.
-        axes.set_xlim(
-            0,
-            max(bornes[-1], nombre * 1.1, 1)
-        )
+        # Ajuste l'axe horizontal pour que la prédiction reste visible,
+        # même si elle dépasse les valeurs du graphique initial.
+        axes.set_xlim(0, max(bornes[-1], nombre * 1.1, 1))
 
-        # Actualise le graphique.
+        # Redessine le graphique pour afficher la ligne à sa nouvelle position.
         canvas.draw_idle()
 
         # Ajoute la nouvelle prédiction dans la liste historique.
+        # Format : "11-22 16:34"
         date = datetime.now().strftime("%m-%d %H:%M")
 
         liste_historique.insert(
