@@ -44,6 +44,15 @@ if __name__ == "__main__":
    print("R² du modèle dummy :", round(r2_score(y_test, prediction_dummy), 4))
    print("R² du modèle SGD :", round(r2_score(y_test, prediction_sgd), 4))
 
+   # Calcule la somme des erreurs au carré entre les valeurs
+   # réellement observées et celles prédites par le modèle.
+   erreurs_carre = np.sum((np.array(y_test) - np.array(prediction_sgd)) ** 2)
+   # Calcule la somme des écarts au carré par rapport à la moyenne.
+   # Cela sert de référence pour évaluer la qualité du modèle.
+   ecarts_carre = np.sum((np.array(y_test) - np.mean(y_test)) ** 2)
+   # Calcule le R² avec NumPy pour vérifier le résultat de scikit-learn.
+   r2_numpy = 1 - erreurs_carre / ecarts_carre
+   print("R² du modèle SGD (numpy) :", round(r2_numpy, 4))
 
    # Enregistre les informations dont l'interface a besoin :
    # les 7 variables, leurs limites, les catégories et le R².
